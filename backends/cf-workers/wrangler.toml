@@ -1,0 +1,21 @@
+name = "cf-workers"
+type = "javascript"
+zone_id = ""
+account_id = ""
+route = ""
+workers_dev = true
+compatibility_date = "2022-05-08"
+kv_namespaces = [ 
+  { binding = "TOPICS", preview_id = "3fcd678ced5844deb0235a4086fe631f", id = "56f7e3f27d0541578c5a43cf804528b5" },
+  { binding = "USERS", id = "054e9dd1d01c43ae958e2be3ddf2dca8", preview_id = "991e8a497cf64ebea96f6d622a7ad922" }
+]
+
+[build]
+command = "npm install && npm run build"
+[build.upload]
+format = "modules"
+main = "./index.mjs"
+[durable_objects]
+bindings = [
+  { name = "TOPIC_DETAILS", class_name = "TopicActor" }
+]

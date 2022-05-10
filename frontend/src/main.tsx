@@ -9,7 +9,7 @@ import { CreateTopicPage, TopicListPage, TopicPage } from './topic'
 import './sakura.css';
 
 const App = (): ReactElement => {
-  const [user, setUser] = useState(null as UserDetails);
+  const [user, setUser] = useState(null as UserDetails | null);
 
   // Load user details from local storage to avoid logout on refresh
   useLayoutEffect(() => {
@@ -25,7 +25,7 @@ const App = (): ReactElement => {
       <Routes>
         <Route path="/" element={<TopicListPage />} />
         <Route path="/post" element={<CreateTopicPage />} />
-        <Route path="/topic/:topicId" element={<TopicPage />} />
+        <Route path="/topics/:topicId" element={<TopicPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
       </Routes>

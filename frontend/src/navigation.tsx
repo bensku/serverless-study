@@ -7,8 +7,8 @@ export const NavBar = (): ReactElement => {
   if (userCtx.user) {
     return <nav>
       <NavLink to="/">Topics</NavLink>
-      <div>Welcome, {userCtx.user.name}!</div>
-      <NavLink to="/post">Create a post</NavLink>
+      <span>Welcome, {userCtx.user.name}!</span>
+      <NavLink to="/post">Post a topic!</NavLink>
       <a onClick={() => {
         userCtx.setUser(null);
         localStorage.removeItem('userDetails');

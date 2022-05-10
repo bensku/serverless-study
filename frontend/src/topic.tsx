@@ -1,6 +1,6 @@
-import { ReactElement, useContext, useEffect, useState } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
-import { Comment, getTopic, listTopics, Topic, TopicDetails, UserContext } from './api';
+import { FormEvent, ReactElement, useContext, useEffect, useState } from 'react';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Comment, createComment, createTopic, getTopic, listTopics, Topic, TopicDetails, UserContext } from './api';
 
 export const TopicListPage = (): ReactElement => {
   const [topics, setTopics] = useState([] as Topic[]);
@@ -19,21 +19,32 @@ export const TopicListPage = (): ReactElement => {
 
 const TopicEntry = ({topic}: {topic: Topic}): ReactElement => {
   return <div>
-    <Link to={`/topic/${topic.id}`}>{topic.title}</Link>
+    <Link to={`/topics/${topic.id}`}>{topic.title}</Link>
     <div>by {topic.author}</div>
   </div>;
 }
 
 export const CreateTopicPage = (): ReactElement => {
-  const userCtx = useContext(UserContext);
-  if (!userCtx.user) {
+  const user = useContext(UserContext).user;
+  if (!user) {
     return <Navigate to='/login' />;
   }
+
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const navigate = useNavigate();
+  const tryPost = async (event: FormEvent) => {
+    event.preventDefault();
+    const topic = await createTopic(user, title, content);
+    navigate(`/topics/${topic.id}`);
+  }
+
   return <section>
     <h1>Create a new topic</h1>
-    <form>
-      <input type='text' placeholder='Topic Title' />
-      <textarea placeholder='Topic content' />
+    <form onSubmit={tryPost}>
+      <input type='text' placeholder='Topic Title' value={title} onChange={(event) => setTitle(event.target.value)} />
+      <textarea placeholder='Topic content' value={content} onChange={(event) => setContent(event.target.value)} />
+      <input type='submit' value='Post a topic!' />
     </form>
   </section>;
 }
@@ -56,26 +67,40 @@ export const TopicPage = (): ReactElement => {
     return <section></section>;
   }
 
+  const commentAdded = (comment: Comment) => {
+    const newDetails = {...details};
+    newDetails.comments.push(comment);
+    setDetails(newDetails);
+  };
+
   return <section>
     <h1>{details.topic.title}</h1>
     {details.comments.map(comment => <CommentEntry comment={comment} />)}
-    <CommentForm />
+    <CommentForm topicId={id} commentAdded={commentAdded} />
   </section>;
 }
 
 const CommentEntry = ({comment}: {comment: Comment}): ReactElement => {
   return <div>
-    <h2>{comment.author}</h2>
-    <div>{comment.content}</div>
+    <h2>Comment by {comment.author}</h2>
+    <span>{comment.content}</span>
   </div>;
 }
 
-const CommentForm = (): ReactElement => {
-  const userCtx = useContext(UserContext);
-  if (userCtx.user) {
-    return <form>
-      <textarea placeholder='Write a comment...' />
-      <button type='submit' value='Post comment!' />
+const CommentForm = ({topicId, commentAdded}:
+    {topicId: string, commentAdded: (comment: Comment) => void}): ReactElement => {
+  const user = useContext(UserContext).user;
+
+  const [content, setContent] = useState('');
+  if (user) {
+    const tryComment = async (event: FormEvent) => {
+      event.preventDefault();
+      const comment = await createComment(user, topicId, content);
+      commentAdded(comment)
+    }
+    return <form onSubmit={tryComment}>
+      <textarea placeholder='Write a comment...' value={content} onChange={(event) => setContent(event.target.value)} />
+      <input type='submit' value='Post comment!' />
     </form>;
   } else {
     return <div>Log in to comment.</div>;
